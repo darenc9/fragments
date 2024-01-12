@@ -30,13 +30,27 @@ app.use(cors());
 // Use gzip/deflate compression middleware
 app.use(compression());
 
+// Function that logs all environment variable when debugging
+function printEnvironmentVariables() {
+  if (process.env.LOG_LEVEL === 'debug') {
+    logger.info("Environment variables:");
+    for (const [key, value] of Object.entries(process.env)) {
+      logger.info(`${key}: ${value}`);
+    }
+  }
+}
+// Calls printEnvironmentVariable
+app.use((req, res, next) => {
+  printEnvironmentVariables();
+  next();
+});
+
 // Define a simple health check route. If the server is running
 // we'll respond with a 200 OK.  If not, the server isn't healthy.
 app.get('/', (req, res) => {
   // Clients shouldn't cache this response (always request it fresh)
   // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#controlling_caching
   res.setHeader('Cache-Control', 'no-cache');
-
   // Send a 200 'OK' response with info about our repo
   res.status(200).json({
     status: 'ok',
