@@ -6,7 +6,7 @@ FOR CCP555 Lab 1
 ```
 npm run lint
 ```
-Runs lint on very file and folder inside .src/
+Runs lint on every file and folder inside .src/
 
 ```
 npm start
