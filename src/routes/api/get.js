@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
   try {
     let fragments;
     const expand = req.query.expand === '1';
-    logger.info("Inside src/routes/api/get.js for user: ", req.user, " expand=", expand);
+    logger.info("Inside src/routes/api/get.js");
 
     if (expand) {
       fragments = await Fragment.byUser(req.user, expand);

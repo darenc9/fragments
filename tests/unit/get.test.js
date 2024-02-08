@@ -38,7 +38,8 @@ describe('GET /v1/fragments', () => {
     expect(res.body.status).toBe('ok');
     expect(Array.isArray(res.body.fragments)).toBe(true);
     expect(res.body.fragments.length).toBe(1);
-
+    expect(res.body.fragments).toEqual([JSON.parse(post.text).fragment.id]);
+    
     // Deletes created fragment for cleanup
     await Fragment.delete(ownerId, res.body.fragments[0]);
     
@@ -62,10 +63,10 @@ describe('GET /v1/fragments', () => {
     // Verifies that the fragments have the correct sample data
     expect(res.body.fragments[0].type).toBe('text/plain');
     expect(res.body.fragments[1].type).toBe('text/plain');
+    //expect(res.body.fragments).toEqual([JSON.parse(post.text).fragment.id, JSON.parse(post2.text).fragment.id]);
     // Deletes created fragments for cleanup
     await Fragment.delete(ownerId, res.body.fragments[0].id);
     await Fragment.delete(ownerId, res.body.fragments[1].id);
   });
-
 
 });
