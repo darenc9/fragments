@@ -2,8 +2,6 @@
 
 const request = require('supertest');
 const app = require('../../src/app');
-const crypto = require('crypto');
-const { Fragment } = require('../../src/model/fragment');
 
 describe('GET /v1/fragments/:id', () => {
     // If the request is missing the Authorization header, it should be forbidden
