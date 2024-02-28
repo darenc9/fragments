@@ -1,36 +1,44 @@
-# EXPLAIN WHAT THIS FILE IS
-#
-#
-# Use node version 18.13.0
-FROM node:18.13.0
+# This Dockerfile is used to build a Docker image for a Node.js microservice
+# for Fragments.
 
-LABEL maintainer="Devon Chan <dchen80@myseneca.ca"
-LABEL description="Fragments node.js microservice"
-
-# We default to use port 8080 in our service
-ENV PORT=8080
-
-# Reduce npm spam when installing within Docker
-# https://docs.npmjs.com/cli/v8/using-npm/config#loglevel
-ENV NPM_CONFIG_LOGLEVEL=warn
-
-# Disable colour when run inside Docker
-# https://docs.npmjs.com/cli/v8/using-npm/config#color
-ENV NPM_CONFIG_COLOR=false
+# Stage 0: Build Dependencies
+FROM node:18.13.0@sha256:d871edd5b68105ebcbfcde3fe8c79d24cbdbb30430d9bd6251c57c56c7bd7646 AS dependencies
 
 # Use /app as our working directory
 WORKDIR /app
 
-# Option 3: explicit filenames - Copy the package.json and package-lock.json
-# files into the working dir (/app), using full paths and multiple source
-# files.  All of the files will be copied into the working dir `./app`
 COPY package.json package-lock.json ./
 
-# Install node dependencies defined in package-lock.json
-RUN npm install
+# Install dependencies
+RUN npm install 
 
 # Copy src to /app/src/
 COPY ./src ./src
+
+##############################################################
+
+# Stage 1: Deploy
+FROM alpine:3.19.1@sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b
+
+# Set labels
+LABEL maintainer="Devon Chan <dchen80@myseneca.ca"
+LABEL description="Fragments node.js microservice"
+
+# Set environment variables
+ENV PORT=8080
+ENV NPM_CONFIG_LOGLEVEL=warn
+ENV NPM_CONFIG_COLOR=false
+
+# Install Node.js and npm
+RUN apk update && \
+    apk add nodejs npm && \
+    apk add --no-cache curl
+
+# Use /app as our working directory
+WORKDIR /app
+
+# Copy dependencies from dependencies stage
+COPY --from=dependencies /app /app
 
 # Copy our HTPASSWD file
 COPY ./tests/.htpasswd ./tests/.htpasswd
@@ -40,3 +48,7 @@ CMD npm start
 
 # We run our service on port 8080
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=15s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl --fail localhost:8080/ || exit 1
