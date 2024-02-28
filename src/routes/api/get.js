@@ -1,6 +1,6 @@
 // src/routes/api/get.js
 const response = require('../../response');
-const logger = require('../..//logger')
+const logger = require('../../logger')
 const { Fragment } = require('../../model/fragment');
 /**
  * Get a list of fragments for the current user

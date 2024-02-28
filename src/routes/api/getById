@@ -1,6 +1,6 @@
 // src/routes/api/getById.js
 const response = require('../../response');
-const logger = require('../..//logger')
+const logger = require('../../logger')
 const { Fragment } = require('../../model/fragment');
 
 module.exports = async (req, res) => {
