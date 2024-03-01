@@ -46,8 +46,5 @@
     "pino-http": "^9.0.0",
     "pino-pretty": "^10.3.1",
     "stoppable": "^1.1.0"
-  },
-  "config": {
-    "tag-version-prefix": "v"
   }
 }
