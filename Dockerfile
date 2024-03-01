@@ -25,14 +25,13 @@ LABEL maintainer="Devon Chan <dchen80@myseneca.ca"
 LABEL description="Fragments node.js microservice"
 
 # Set environment variables
-ENV PORT=8080
-ENV NPM_CONFIG_LOGLEVEL=warn
-ENV NPM_CONFIG_COLOR=false
+ENV PORT=8080 \
+    NPM_CONFIG_LOGLEVEL=warn \
+    NPM_CONFIG_COLOR=false
 
 # Install Node.js and npm
 RUN apk update && \
-    apk add nodejs npm && \
-    apk add --no-cache curl
+    apk add --no-cache nodejs=20.11.1-r0 npm=10.2.5-r0 curl=8.5.0-r0
 
 # Use /app as our working directory
 WORKDIR /app
@@ -44,7 +43,7 @@ COPY --from=dependencies /app /app
 COPY ./tests/.htpasswd ./tests/.htpasswd
 
 # Start the container by running our server
-CMD npm start
+CMD ["npm", "start"]
 
 # We run our service on port 8080
 EXPOSE 8080
