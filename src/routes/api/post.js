@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
     try {
         const { type } = contentType.parse(req);
         // Checks if content type is supported
-        if (type !== 'text/plain') {
+        if (!Fragment.isSupportedType(type)) {
             logger.info("ERR415: Unsupported Media Type. Media type detected: ", type);
             return res.status(415).json(response.createErrorResponse(500, 'Unsupported Media Type'));
         }

@@ -68,7 +68,7 @@ class Fragment {
    * @returns Promise<void>
    */
   static delete(ownerId, id) {
-    deleteFragment(ownerId, id);
+    return deleteFragment(ownerId, id);
   }
 
   /**
@@ -76,7 +76,7 @@ class Fragment {
    * @returns Promise<void>
    */
   save() {
-    writeFragment({
+    return writeFragment({
       id: this.id,
       ownerId: this.ownerId,
       created: this.created,
@@ -106,7 +106,7 @@ class Fragment {
 
     this.size = data.length;
     this.updated = new Date().toISOString();
-    this.save();
+    await this.save();
     await writeFragmentData(this.ownerId, this.id, data);
   }
 
