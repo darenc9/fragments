@@ -3,7 +3,7 @@
 const request = require('supertest');
 const app = require('../../src/app');
 
-describe('GET /v1/fragments/:id', () => {
+describe('GET /v1/fragments/:id.:ext?', () => {
     // If the request is missing the Authorization header, it should be forbidden
     test('unauthenticated requests are denied', () => request(app).get('/v1/fragments').expect(401));
 
@@ -32,12 +32,48 @@ describe('GET /v1/fragments/:id', () => {
         .get(`/v1/fragments/${fragmentId}`)
         .auth('user1@email.com', 'password1');
 
-    // Assert response
-    console.log("getResponse: ", getResponse.text);
     expect(getResponse.statusCode).toBe(200);
     expect(getResponse.headers['content-type']).toBe('text/plain');
     expect(getResponse.text).toEqual('Test fragment');
 
     });
     
+    // Attempt to convert md to html using GET:id.:ext
+    test('Converting MD to HTML successfully', async () => {
+        // POST a fragment to obtain its ID
+        const postResponse = await request(app)
+            .post('/v1/fragments').auth('user1@email.com', 'password1')
+            .set('Content-Type', 'text/markdown').send('# Test fragment');
+        expect(postResponse.statusCode).toBe(201);
+    
+        const fragmentId = JSON.parse(postResponse.text).fragment.id;
+    
+        const getResponse = await request(app)
+            .get(`/v1/fragments/${fragmentId}.html`)
+            .auth('user1@email.com', 'password1');
+    
+        // Assert response
+        expect(getResponse.statusCode).toBe(200);
+        expect(getResponse.headers['content-type']).toContain('text/html');
+        expect(getResponse.text).toContain('<h1>Test fragment</h1>');
+        });
+
+    // Attempt to convert md to image using GET:id.:ext, expecting error
+    test('Converting MD to unsupported type', async () => {
+        // POST a fragment to obtain its ID
+        const postResponse = await request(app)
+            .post('/v1/fragments').auth('user1@email.com', 'password1')
+            .set('Content-Type', 'text/markdown').send('# Test fragment');
+        expect(postResponse.statusCode).toBe(201);
+    
+        const fragmentId = JSON.parse(postResponse.text).fragment.id;
+    
+        const getResponse = await request(app)
+            .get(`/v1/fragments/${fragmentId}.png`)
+            .auth('user1@email.com', 'password1');
+    
+        // Assert response
+        expect(getResponse.statusCode).toBe(415);
+        });
+
 });

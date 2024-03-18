@@ -17,16 +17,13 @@ module.exports = async (req, res) => {
         // Creates fragment with from request body
         const fragment = new Fragment ({
             ownerId: req.user,
-            type: req.headers['content-type'],
+            type: type,
             size: req.body.length,
         });
 
         await fragment.save();
         await fragment.setData(req.body);
 
-        const fragmentData = req.body.toString('utf-8');
-        console.log("fragmentData:", fragmentData);
-        console.log("req.header: ", req.headers);
         // Sets location to full URL to GET the created fragment
         let locationUrl;
         if (process.env.API_URL) {

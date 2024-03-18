@@ -24,8 +24,9 @@ class Fragment {
       throw new Error(`size must be a number`);
     if (size < 0) 
       throw new Error(`Size cannot be negative`);
-    if (type != 'text/plain; charset=utf-8' && type != 'text/plain')
-      throw new Error(`only text/plain supported`);
+    if (!Fragment.isSupportedType(type)){
+      throw new Error('Unsupported content type.');
+    }
 
     this.id = id || randomUUID();
     this.ownerId = ownerId;
@@ -143,7 +144,19 @@ class Fragment {
    */
   static isSupportedType(value) {
     const { type } = contentType.parse(value);
-    return type === 'text/plain';
+    const supportedTextTypes = ['text/plain', 'text/markdown', 'text/html', 'text/csv'];
+    
+    // Support any text-based MIME type
+    if (supportedTextTypes.includes(type)) {
+        return true;
+    }
+
+    // Support JSON data type
+    if (type === 'application/json') {
+        return true;
+    }
+
+    return false;
   }
 }
 
