@@ -45,7 +45,7 @@ function printEnvironmentVariables(logger) {
 
 // Calls printEnvironmentVariable
 app.use((req, res, next) => {
-  printEnvironmentVariables(logger);
+  //printEnvironmentVariables(logger);
   next();
 });
 app.prototype.printEnvironmentVariables = printEnvironmentVariables;

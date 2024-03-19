@@ -6,18 +6,26 @@ const logger = require('../../../src/logger');
 
 
 module.exports = async (req, res) => {
+    logger.info("inside post route");
     try {
         const { type } = contentType.parse(req);
         // Checks if content type is supported
         if (!Fragment.isSupportedType(type)) {
             logger.info("ERR415: Unsupported Media Type. Media type detected: ", type);
-            return res.status(415).json(response.createErrorResponse(500, 'Unsupported Media Type'));
+            return res.status(415).json(response.createErrorResponse(415, 'Unsupported Media Type'));
         }
+
+        const { type: fragType, parameters: { charset } } = contentType.parse(req.headers['content-type']);
+
+        const typeWithCharset = charset ? `${fragType}; charset=${charset}` : fragType;
+
+        logger.debug({ charset }, 'charset');
+        logger.debug({ fragType }, 'fragType');
 
         // Creates fragment with from request body
         const fragment = new Fragment ({
             ownerId: req.user,
-            type: type,
+            type:  typeWithCharset,
             size: req.body.length,
         });
 

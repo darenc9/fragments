@@ -5,6 +5,7 @@ node_modules/
 tests/
 !tests/.htpasswd
 .env
+hurl.env
 .eslintrc.js
 .git/
 .gitignore
