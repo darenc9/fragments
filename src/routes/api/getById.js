@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
     const { id } = req.params;
     const extension = req.params.ext || '';
 
-    logger.debug(`Inside GET /fragments/:id, id: $(id)`);
+    logger.debug({ id }, `Inside GET /fragments/:id, id:`);
 
   try {
     const fragment = await Fragment.byId(req.user, id);

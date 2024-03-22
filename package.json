@@ -12,7 +12,7 @@
     "start": "cross-env node src/index.js",
     "dev": "cross-env LOG_LEVEL=debug nodemon ./src/index.js --watch src",
     "debug": "cross-env LOG_LEVEL=debug nodemon --inspect=0.0.0.0:9229 ./src/index.js --watch src",
-    "start:test": "env-cmd -f hurl.env node ./src/index.js",
+    "start:test": "env-cmd -f env.jest node ./src/index.js",
     "test:integration": "hurl --test --glob \"tests/integration/**/*.hurl\"",
     "test:integration1": "hurl --test --glob \"tests/integration/post-fragments-charset.hurl\""
   },
@@ -35,11 +35,13 @@
     "supertest": "^6.3.4"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.537.0",
     "aws-jwt-verify": "^4.0.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.2",
+    "env-cmd": "^10.1.0",
     "express": "^4.18.2",
     "helmet": "^7.1.0",
     "http-auth": "^4.2.0",

@@ -2,7 +2,7 @@
 
 const express = require('express');
 const response = require('../response');
-
+const { hostname } = require('os');
 // version and author from package.json
 const { version, author } = require('../../package.json');
 
@@ -32,6 +32,7 @@ router.get('/', (req, res) => {
     author,
     githubUrl: 'https://github.com/darenc9/fragments',
     version,
+    hostname: hostname(),
     }
   ));
 
