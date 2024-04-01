@@ -1,11 +1,13 @@
+// XXX: temporary use of memory-db until we add DynamoDB
+const MemoryDB = require('../memory/memory-db');
+const logger = require('../../../logger');
 const s3Client = require('./s3Client');
 const { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
-const MemoryDB = require('../memory/memory-db');
-const logger = require('../../../logger')
 
 // Create two in-memory databases: one for fragment metadata and the other for raw data
-//const data = new MemoryDB();
 const metadata = new MemoryDB();
+
+
 
 // Write a fragment's metadata to memory db. Returns a Promise
 function writeFragment(fragment) {
@@ -87,6 +89,7 @@ async function readFragmentData(ownerId, id) {
     throw new Error('unable to read fragment data');
   }
 }
+
 // Get a list of fragment ids/objects for the given user from memory db. Returns a Promise
 async function listFragments(ownerId, expand = false) {
   const fragments = await metadata.query(ownerId);
@@ -100,27 +103,24 @@ async function listFragments(ownerId, expand = false) {
   return fragments.map((fragment) => fragment.id);
 }
 
-// Delete a fragment's metadata and data from memory db and S3. Returns a Promise
+// Deletes a fragment's data from an S3 Object in a Bucket
 async function deleteFragment(ownerId, id) {
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: `${ownerId}/${id}`,
+  };
+
+  const command = new DeleteObjectCommand(params);
+
   try {
-    // Delete metadata
-    await metadata.del(ownerId, id);
-
-    // Delete data from S3
-    const params = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: `${ownerId}/${id}`,
-    };
-    const command = new DeleteObjectCommand(params);
     await s3Client.send(command);
-
-    return true; // Deletion successful
-  } catch (error) {
-    logger.error({ error }, 'Error deleting fragment from S3');
-    throw new Error('Unable to delete fragment');
+  } catch (err) {
+    // Log the error for debugging purposes
+    const { Bucket, Key } = params;
+    logger.error({ err, Bucket, Key }, 'Error deleting fragment data from S3');
+    throw new Error('unable to delete fragment data');
   }
 }
-
 
 module.exports.listFragments = listFragments;
 module.exports.writeFragment = writeFragment;

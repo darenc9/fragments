@@ -22,8 +22,10 @@ Content-Type: text/plain
 [Asserts]
 body == "Hello S3!"
 
-# 5. Delete Fragment (TO DO!)
+# 5. Delete Fragment
 DELETE {{url}}
+[BasicAuth]
+user1@email.com:password1
 
 # 6. Server returns 200
 HTTP/1.1 200
