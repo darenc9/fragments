@@ -29,9 +29,9 @@ ENV PORT=8080 \
     NPM_CONFIG_LOGLEVEL=warn \
     NPM_CONFIG_COLOR=false
 
-# Install Node.js and npm
+# Install npm and curl
 RUN apk update && \
-    apk add --no-cache nodejs=20.11.1-r0 npm=10.2.5-r0 curl=8.5.0-r0
+    apk add --no-cache npm=10.2.5-r0 curl=8.5.0-r0
 
 # Use /app as our working directory
 WORKDIR /app
