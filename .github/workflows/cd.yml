@@ -99,6 +99,8 @@ jobs:
               PORT=${{ secrets.PORT }}
               API_URL=${{ secrets.API_URL }}
               AWS_S3_BUCKET_NAME=dchen80-fragments
+              AWS_DYNAMODB_TABLE_NAME=fragments
+              
 
         - name: Deploy Amazon ECS task definition
           uses: aws-actions/amazon-ecs-deploy-task-definition@v1
