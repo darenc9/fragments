@@ -68,16 +68,16 @@ class Fragment {
    * @param {string} id fragment's id
    * @returns Promise<void>
    */
-  static delete(ownerId, id) {
-    return deleteFragment(ownerId, id);
+  static async delete(ownerId, id) {
+    return await deleteFragment(ownerId, id);
   }
 
   /**
    * Saves the current fragment to the database
    * @returns Promise<void>
    */
-  save() {
-    return writeFragment({
+  async save() {
+    return await writeFragment({
       id: this.id,
       ownerId: this.ownerId,
       created: this.created,
@@ -92,7 +92,7 @@ class Fragment {
    * @returns Promise<Buffer>
    */
   async getData() {
-    return readFragmentData(this.ownerId, this.id);
+    return await readFragmentData(this.ownerId, this.id);
   }
 
   /**

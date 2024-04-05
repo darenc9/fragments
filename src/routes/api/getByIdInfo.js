@@ -13,8 +13,8 @@ module.exports = async (req, res) => {
             fragment: {
                 id: fragment.id,
                 ownerId: fragment.ownerId,
-                created: fragment.createdAt,
-                updated: fragment.updatedAt,
+                created: fragment.created,
+                updated: fragment.updated,
                 type: fragment.type,
                 size: fragment.size,
             }
