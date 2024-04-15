@@ -9,6 +9,7 @@ const markdown = require('markdown-it');
 let md = new markdown();
 const sharp = require('sharp');
 const { parse } = require('csv-parse/sync');
+const logger = require('../logger')
 
 // Functions for working with fragment metadata/data using our DB
 const {
@@ -192,23 +193,30 @@ class Fragment {
     return supportedTextExtensions.includes(extension);
   }
 
-  // Returns converted image
   async convertImage(extension) {
     if (!Fragment.isSupportedImageType(this.type) || !Fragment.isSupportedImageType(extension)) {
       throw Response.createErrorResponse(415, 'Unsupported image type');
     }
-    try {
-      const fragData = await this.getData();
   
-      if (this.type.split('/')[1].toLowerCase() === extension.toLowerCase()) 
-        return fragData;
-      
-      return await sharp(fragData).toFormat(extension).toBuffer();
+    try {
+      // Attempt to retrieve fragData
+      const fragData = await this.getData();
 
+      if (this.type.split('/')[1].toLowerCase() === extension.toLowerCase())
+        return fragData;
+
+      logger.debug({ extension }, "attempting to convert image to this extension.");
+      try {
+        return await sharp(fragData).toFormat((extension)).toBuffer();
       } catch (error) {
-          console.error('Error converting image:', error);
-          throw new Error(`Conversion from ${this.type} to ${extension} is not supported.`);
+        logger.error({ error }, "Sharp failed to convert image");
+        throw new Error(`Image conversion failed: ${error.message}`);
       }
+
+    } catch (error) {
+      logger.error('Error retrieving fragment data:', error);
+      throw new Error('Failed to retrieve fragment data');
+    }
   }
 
   // Returns converted text types

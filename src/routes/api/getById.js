@@ -13,14 +13,8 @@ module.exports = async (req, res) => {
     const fragment = await Fragment.byId(req.user, id);
     const fragmentData = await fragment.getData();
 
-    logger.debug("Fragment's data: ", fragmentData);
     let fragData = null;
     let contentType = null;
-    console.log("extension: ", extension);
-    console.log("id: ", id);
-    console.log("req.user: ", req.user);
-    console.log("fragment", fragment);
-    console.log("fragmentData", fragmentData);
 
     if (!extension){
       res.setHeader('Content-type', fragment.type);
@@ -30,10 +24,12 @@ module.exports = async (req, res) => {
     else if (extension) {
       try {
         if (Fragment.isSupportedImageType(fragment.type)) {
+          logger.debug("Fragment conversion: supported image type");
           fragData = await fragment.convertImage(extension);
           contentType = 'image/' + extension;
         }
         else if (Fragment.isSupportedTextType(fragment.type)){
+          logger.debug("Fragment conversion: supported text type");
           fragData = await fragment.convertText(extension);
           contentType = extension === 'json' ? 'application/json' : 'text/' + extension;
         }
