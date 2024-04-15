@@ -6,7 +6,6 @@ const logger = require('../../../src/logger');
 
 
 module.exports = async (req, res) => {
-    logger.info("inside post route");
     try {
         const { type } = contentType.parse(req);
         // Checks if content type is supported
@@ -15,8 +14,8 @@ module.exports = async (req, res) => {
             return res.status(415).json(response.createErrorResponse(415, 'Unsupported Media Type'));
         }
 
-        const { type: fragType, parameters: { charset } } = contentType.parse(req.headers['content-type']);
 
+        const { type: fragType, parameters: { charset } } = contentType.parse(req.headers['content-type']);
         const typeWithCharset = charset ? `${fragType}; charset=${charset}` : fragType;
 
         logger.debug({ charset }, 'charset');
@@ -34,13 +33,11 @@ module.exports = async (req, res) => {
 
         // Sets location to full URL to GET the created fragment
         let locationUrl;
-        if (process.env.API_URL) {
+        if (process.env.API_URL)
             locationUrl = `${process.env.API_URL}/v1/fragments/${fragment.id}`;
-        } else {
-            const host = req.headers.host;
-            const protocol = req.protocol;
-            locationUrl = `${protocol}://${host}/v1/fragments/${fragment.id}`;
-        }
+        else 
+            locationUrl = `${req.protocol}://${req.headers.host}/v1/fragments/${fragment.id}`;
+        
         logger.debug("Location with full URL to the fragment: ", locationUrl);
 
         // Returns success code with location, status, and fragment

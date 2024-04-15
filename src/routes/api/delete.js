@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
     res.status(200).json(response.createSuccessResponse({ status: 'ok' }));
 
   } catch (error) {
-    res.status(500).json(response.createErrorResponse(500, 'Unable to fetch fragments'));
+    res.status(500).json(response.createErrorResponse(500, 'Unable to delete fragments'));
   }
 
   };

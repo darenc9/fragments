@@ -1,5 +1,6 @@
 const { Fragment } = require('../../src/model/fragment');
-
+const fs = require('fs');
+const path = require('path');
 // Wait for a certain number of ms. Feel free to change this value
 // if it isn't long enough for your test runs. Returns a Promise.
 const wait = async (ms = 10) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -254,4 +255,163 @@ describe('Fragment class', () => {
       expect(() => Fragment.byId('1234', fragment.id)).rejects.toThrow();
     });
   });
+});
+
+describe('Conversion - images', () => {
+  let fragment;
+  beforeAll(() => {
+    const imagePath = path.join(__dirname, '..', 'resources', 'image.png');
+    const imageData = fs.readFileSync(imagePath);
+    fragment = new Fragment({
+      ownerId: '1234',
+      type: 'image/png',
+    });
+    fragment.setData(imageData);
+  });
+
+  test('converts PNG image to JPG format', async () => {
+    const result = await fragment.convertImage('jpg');
+
+    expect(result).toBeInstanceOf(Buffer); // Check that the result is a Buffer
+    expect(result.length).toBeGreaterThan(0); // Check that the Buffer is not empty
+  });
+
+  test('Converts PNG image to WEBP format', async () => {
+    const result = await fragment.convertImage('webp');
+
+    expect(result).toBeInstanceOf(Buffer);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.toString('ascii', 8, 12)).toEqual('WEBP');
+});
+
+  test('Converts PNG image to AVIF format', async () => {
+      const result = await fragment.convertImage('avif');
+
+      expect(result).toBeInstanceOf(Buffer);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.toString('ascii', 4, 8)).toEqual('ftyp');
+  });
+
+  test('Converts PNG image to PNG format', async () => {
+    const result = await fragment.convertImage('png');
+
+    expect(result).toBeInstanceOf(Buffer);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.toString('ascii', 1, 4)).toEqual('PNG');
+  });
+
+  test('converts PNG image to TIFF format', async () => {
+    try{
+      await fragment.convertImage('tiff');
+    }catch(error){
+      expect(error.error.code).toBe(415);
+      expect(error.error.message).toBe('Unsupported image type');
+    }
+  });
+
+});
+
+describe('Conversion - text files', () => {
+  let fragment;
+
+  test('converts TXT to TXT', async () => {
+    fragment = new Fragment({ ownerId: '1234', type: 'text/plain', size: 0 });
+    await fragment.save();
+    await fragment.setData(Buffer.from("hello"));
+    const expected = "hello";
+    const result = await fragment.convertText('txt');
+    expect(result.toString()).toEqual((expected));
+    expect(fragment.type).toEqual('text/plain');
+  });
+
+  test('converts MD to txt', async () => {
+    fragment = new Fragment({ ownerId: '1234', type: 'text/markdown', size: 0 });
+    await fragment.save();
+    const mdSample = "# Hello\nThis is a **markdown** text.";
+    await fragment.setData(Buffer.from(mdSample));
+    const result = await fragment.convertText('txt');
+    expect(result.toString()).toEqual((mdSample));
+  });
+
+  test('converts MD to HTML', async () => {
+    fragment = new Fragment({ ownerId: '1234', type: 'text/markdown', size: 0 });
+    await fragment.save();
+    const mdSample = "# Hello\nThis is a **markdown** text.";
+    const expected = "<h1>Hello</h1>\n<p>This is a <strong>markdown</strong> text.</p>";
+    await fragment.setData(Buffer.from(mdSample));
+    const result = await fragment.convertText('html');
+    expect(result.toString().trim()).toEqual((expected));
+  });
+
+  test('converts CSV to JSON', async () => {
+    fragment = new Fragment({ ownerId: '1234', type: 'text/csv', size: 0 });
+    await fragment.save();
+    const csvData = 'name,age\nDude,33\nBob,44';
+    await fragment.setData(Buffer.from(csvData));
+    const expectedJson = [
+      {"name": "Dude", "age": "33"},
+      {"name": "Bob", "age": "44"}];
+    const result = await fragment.convertText('json');
+    expect(JSON.parse(result)).toEqual((expectedJson));
+  });
+
+  test('converts CSV to CSV', async () => {
+    fragment = new Fragment({ ownerId: '1234', type: 'text/csv', size: 0 });
+    await fragment.save();
+    const csvData = 'name,age\nDude,33\nBob,44';
+    await fragment.setData(Buffer.from(csvData));
+    const result = await fragment.convertText('csv');
+    expect((result.toString())).toEqual((csvData.toString()));
+  });
+
+  test('converts TXT to JSON', async () => {
+    fragment = new Fragment({ ownerId: '1234', type: 'text/plain', size: 0 });
+    await fragment.save();
+    await fragment.setData(Buffer.from("hello"));
+    try {
+      await fragment.convertText('json');
+    } catch (error) {
+      expect(error.error.code).toBe(415);
+      expect(error.error.message).toBe('Unsupported conversion type');
+    }
+  });
+
+  test('converts TXT to MD', async () => {
+    fragment = new Fragment({ ownerId: '1234', type: 'text/plain', size: 0 });
+    await fragment.save();
+    await fragment.setData(Buffer.from("hello"));
+    try {
+      await fragment.convertText('md');
+    } catch (error) {
+      expect(error.error.code).toBe(415);
+      expect(error.error.message).toBe('Unsupported conversion type');
+    }
+  });
+
+  test('converts TXT to HTML', async () => {
+    fragment = new Fragment({ ownerId: '1234', type: 'text/plain', size: 0 });
+    await fragment.save();
+    await fragment.setData(Buffer.from("hello"));
+    try {
+      await fragment.convertText('html');
+    } catch (error) {
+      expect(error.error.code).toBe(415);
+      expect(error.error.message).toBe('Unsupported conversion type');
+    }
+  });
+
+  test('converts TXT to PDF', async () => {
+    fragment = new Fragment({ ownerId: '1234', type: 'text/plain', size: 0 });
+    await fragment.save();
+    await fragment.setData(Buffer.from("hello"));
+    try {
+      await fragment.convertText('pdf');
+    } catch (error) {
+      expect(error.error.code).toBe(415);
+      expect(error.error.message).toBe('Unsupported text type');
+    }
+  });
+  
+  
+
 });

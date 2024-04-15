@@ -67,6 +67,23 @@ describe('POST /fragments route', () => {
             .set('Content-Type', 'text/plain').send('Test fragment');
     
         expect(res.headers.location).toMatch(`fragment-test.com/v1/fragments/${res.body.fragment.id}`);
-        });
+    });
+
+    // Test posting an image.png
+    test('POSTing an image type: image.png', async () => {
+        // Read the image file into a buffer (assuming 'image.png' is located in the test directory)
+        const fs = require('fs');
+        const path = require('path');
+        const imageBuffer = fs.readFileSync(path.join(__dirname, '..', 'resources', 'image.png'));
+    
+        // POST a fragment to obtain its ID
+        const postResponse = await request(app)
+            .post('/v1/fragments').auth('user1@email.com', 'password1')
+            .set('Content-Type', 'image/png')
+            .send(imageBuffer);
+    
+        expect(postResponse.statusCode).toBe(201);
+        expect(postResponse.body.fragment.type).toBe("image/png");
+    });
   
 })

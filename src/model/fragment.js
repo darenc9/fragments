@@ -1,8 +1,14 @@
+// src/model/fragment.js
 // Use crypto.randomUUID() to create unique IDs, see:
 // https://nodejs.org/api/crypto.html#cryptorandomuuidoptions
 const { randomUUID } = require('crypto');
 // Use https://www.npmjs.com/package/content-type to create/parse Content-Type headers
 const contentType = require('content-type');
+const Response = require('../response');
+const markdown = require('markdown-it');
+let md = new markdown();
+const sharp = require('sharp');
+const { parse } = require('csv-parse/sync');
 
 // Functions for working with fragment metadata/data using our DB
 const {
@@ -144,19 +150,110 @@ class Fragment {
    */
   static isSupportedType(value) {
     const { type } = contentType.parse(value);
-    const supportedTextTypes = ['text/plain', 'text/markdown', 'text/html', 'text/csv'];
-    
-    // Support any text-based MIME type
-    if (supportedTextTypes.includes(type)) {
-        return true;
+    const supportedTypes = [
+      'text/plain',
+      'text/plain; charset=utf-8',
+      'text/markdown',
+      'text/html',
+      'text/csv',
+      'application/json',
+      'image/png',
+      'image/jpeg',
+      'image/webp',
+      'image/gif',
+    ];
+    return supportedTypes.includes(type);
+  }
+
+  // Returns true if we can work with this type of image
+  static isSupportedImageType(value) {
+    //const { type } = contentType.parse(value);
+    const supportedMediaTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/avif', 'image/gif'];
+    const supportedImageExtensions = ['png', 'jpg', 'jpeg', 'webp', 'avif', 'gif'];
+  
+    // Check if the content type is in the list of supported media types
+    if (supportedMediaTypes.includes(value))
+      return true;
+  
+    // Extract file extension from the content type
+    const extension = value.split('/').pop().toLowerCase();
+    return supportedImageExtensions.includes(extension);
+  }
+
+  // Returns true if we can work with this type of text file
+  static isSupportedTextType(value) {
+    const supportedTextTypes = ['text/plain', 'text/markdown', 'text/html', 'text/csv', 'application/json'];
+    const supportedTextExtensions = ['txt', 'md', 'html', 'csv', 'json'];
+
+    if (supportedTextTypes.includes(value))
+      return true;
+
+    const extension = value.split('/').pop().toLowerCase();
+    return supportedTextExtensions.includes(extension);
+  }
+
+  // Returns converted image
+  async convertImage(extension) {
+    if (!Fragment.isSupportedImageType(this.type) || !Fragment.isSupportedImageType(extension)) {
+      throw Response.createErrorResponse(415, 'Unsupported image type');
+    }
+    try {
+      const fragData = await this.getData();
+  
+      if (this.type.split('/')[1].toLowerCase() === extension.toLowerCase()) 
+        return fragData;
+      
+      return await sharp(fragData).toFormat(extension).toBuffer();
+
+      } catch (error) {
+          console.error('Error converting image:', error);
+          throw new Error(`Conversion from ${this.type} to ${extension} is not supported.`);
+      }
+  }
+
+  // Returns converted text types
+  async convertText(extension) {
+    if (!Fragment.isSupportedTextType(this.type) || !Fragment.isSupportedTextType(extension)) {
+      throw Response.createErrorResponse(415, 'Unsupported text type');
+    }
+    let fragData;
+    try {
+      fragData = await this.getData();
+    } catch (error) {
+      throw new Error('Error fetching fragment data');
     }
 
-    // Support JSON data type
-    if (type === 'application/json') {
-        return true;
-    }
+    if (this.type.split('/')[1].toLowerCase() === extension.toLowerCase())
+      return fragData;
 
-    return false;
+    switch (extension) {
+      case 'txt':
+        return fragData;
+      
+      case 'html':
+        if (this.type.includes('text/markdown'))
+          return md.render(fragData.toString());
+        else
+          throw Response.createErrorResponse(415, 'Unsupported conversion type');
+
+      case 'json':
+        if (this.type.includes('text/csv')) {
+          // try csv to json conversion
+          try {
+            const records = parse(fragData, {
+                columns: true,
+                skip_empty_lines: true
+            });
+            return JSON.stringify(records);
+          } catch (error) {
+            throw Response.createErrorResponse(500, 'Error converting csv to json');
+          }
+        }
+        throw Response.createErrorResponse(415, 'Unsupported conversion type');
+
+        default:
+          throw Response.createErrorResponse(415, 'Unsupported conversion type');
+    }
   }
 }
 
