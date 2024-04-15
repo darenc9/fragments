@@ -148,8 +148,5 @@ describe('GET /v1/fragments/:id.:ext?', () => {
         expect(getResponse.statusCode).toBe(200);
         expect(getResponse.headers['content-type']).toContain('image/jpg');
     });
-            
-
-
 
 });
