@@ -97,9 +97,7 @@ describe('GET /v1/fragments/:id.:ext?', () => {
 
     // Testing pulling image.png from png
     test('Converting image.png to PNG successfully', async () => {
-        // Read the image file into a buffer (assuming 'image.png' is located in the test directory)
-        const fs = require('fs');
-        const path = require('path');
+        // Read the image file into a buffer (assuming 'image.png' is located in the test directory)\;
         const imageBuffer = fs.readFileSync(path.join(__dirname, '..', 'resources', 'image.png'));
     
         // POST a fragment to obtain its ID
