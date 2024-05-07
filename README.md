@@ -13,7 +13,7 @@ A fragment is any piece of text (e.g., MIME type of  `text/plain`, `text/markdow
 - Image fragments can be converted to any other image fragment types
 - Text fragments can be converted into other text fragment types
 
-Fragments have two parts: 1) metadata (i.e., details _about_ the fragment); and 2) data (i.e., the actual binary contents of the fragment).
+`Fragments have two parts:` 1) metadata (i.e., details _about_ the fragment); and 2) data (i.e., the actual binary contents of the fragment).
 
 The fragment's `metadata` is an object that describes the fragment in the following format:
 
