@@ -17,7 +17,8 @@ module.exports = async (req, res) => {
                 updated: fragment.updated,
                 type: fragment.type,
                 size: fragment.size,
-            }
+            },
+            formats: fragment.formatsExtensions(),
         };
         res.status(200).json(metadata);
 

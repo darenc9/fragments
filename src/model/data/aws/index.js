@@ -121,7 +121,7 @@ async function readFragmentData(ownerId, id) {
 
 // Get a list of fragments, either ids-only, or full Objects, for the given user.
 // Returns a Promise<Array<Fragment>|Array<string>|undefined>
-async function listFragments(ownerId, expand = false) {
+async function listFragments(ownerId, query = {}, expand = false) {
   // Configure our QUERY params, with the name of the table and the query expression
   const params = {
     TableName: process.env.AWS_DYNAMODB_TABLE_NAME,
@@ -131,6 +131,10 @@ async function listFragments(ownerId, expand = false) {
     // Use the `ownerId` value to do the query
     ExpressionAttributeValues: {
       ':ownerId': ownerId,
+      ...Object.entries(query).reduce((acc, [key, value]) => {
+        if (value) acc[`:${key}`] = value;
+        return acc;
+      }, {}),
     },
   };
 

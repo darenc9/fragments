@@ -1,9 +1,7 @@
 # fragments
-FOR CCP555 Lab 1
-Devon Chan  
-066 869 132
+Fragments is a highly scalable containerized microservice that manages small fragments of texts and images. 
 
-dchen80@myseneca.ca
+A fragment is any piece of text (e.g., MIME type of <mark>text/plain</mark>, text/markdown, text/html, text/csv, etc,), JSON data (application/json), or any of the following images: image/png, image/jpeg, image/webp, image/avif, image/gif.
 
 
 ## Scripts:

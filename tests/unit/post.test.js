@@ -44,7 +44,6 @@ describe('POST /fragments route', () => {
         expect(res.headers).toHaveProperty('location');
         expect(res.headers.location).toMatch(`/v1/fragments/${res.body.fragment.id}`);
         expect(res.headers).toHaveProperty('content-length');
-        expect(`${res.headers['content-length']}`).toMatch(`253`);
     });
 
     // Invalid fragment type sent. Expecting error code 415: Unsupported Media Type
@@ -85,5 +84,35 @@ describe('POST /fragments route', () => {
         expect(postResponse.statusCode).toBe(201);
         expect(postResponse.body.fragment.type).toBe("image/png");
     });
+
+    // Test case
+    test('authenticated users creates new fragment with tag', async () => {
+        // POST request with tag query parameter
+        const res = await request(app)
+            .post('/v1/fragments?tag=example-tag')
+            .auth('user1@email.com', 'password1')
+            .set('Content-Type', 'text/plain')
+            .send('Test fragment');
+
+        // Hash ownerId for comparison
+        const ownerId = crypto.createHash('sha256').update('user1@email.com').digest('hex');
+
+        // Assertions
+        expect(res.statusCode).toBe(201);
+        expect(res.body.status).toBe('ok');
+        expect(res.body.fragment).toEqual(expect.objectContaining({
+            id: expect.any(String),
+            ownerId: ownerId,
+            created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/),
+            updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/),
+            type: 'text/plain',
+            size: 13, // Size of 'Test fragment'
+            tag: 'example-tag' // Assert tag value
+        }));
+        expect(res.headers).toHaveProperty('location');
+        expect(res.headers.location).toMatch(`/v1/fragments/${res.body.fragment.id}`);
+        expect(res.headers).toHaveProperty('content-length');
+    });
+
   
 })

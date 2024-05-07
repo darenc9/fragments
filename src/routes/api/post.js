@@ -7,14 +7,13 @@ const logger = require('../../../src/logger');
 
 module.exports = async (req, res) => {
     try {
+        const { tag } = req.query;
         const { type } = contentType.parse(req);
         // Checks if content type is supported
         if (!Fragment.isSupportedType(type)) {
             logger.info("ERR415: Unsupported Media Type. Media type detected: ", type);
             return res.status(415).json(response.createErrorResponse(415, 'Unsupported Media Type'));
         }
-
-
         const { type: fragType, parameters: { charset } } = contentType.parse(req.headers['content-type']);
         const typeWithCharset = charset ? `${fragType}; charset=${charset}` : fragType;
 
@@ -26,6 +25,7 @@ module.exports = async (req, res) => {
             ownerId: req.user,
             type:  typeWithCharset,
             size: req.body.length,
+            tag: tag || null,
         });
 
         await fragment.save();

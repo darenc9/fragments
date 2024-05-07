@@ -171,7 +171,7 @@ describe('Fragment class', () => {
     });
   });
 
-  describe('save(), getData(), setData(), byId(), byUser(), delete()', () => {
+  describe('save(), getData(), setData(), byId(), byUser(), delete(), setTag()', () => {
     test('byUser() returns an empty array if there are no fragments for this user', async () => {
       expect(await Fragment.byUser('1234')).toEqual([]);
     });
@@ -254,7 +254,53 @@ describe('Fragment class', () => {
       await Fragment.delete('1234', fragment.id);
       expect(() => Fragment.byId('1234', fragment.id)).rejects.toThrow();
     });
+
+    test('setTag() sets the tag of a fragment', async () => {
+      const fragment = new Fragment({ ownerId: '1234', type: 'text/plain', size: 0 });
+      await fragment.save();
+      await fragment.setTag("hi");
+      expect(fragment.tag).toBe("hi");
+    });
   });
+});
+
+describe('formatExtensions()', () => {
+  test('image/ fragment formats', async () => {
+    const fragment = new Fragment({ ownerId: '1234', type: 'image/jpeg', size: 0 });
+    await fragment.save();
+    expect (fragment.formatsExtensions()).toEqual(['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif']);
+  });
+
+  test('text/plain fragment formats', async () => {
+    const fragment = new Fragment({ ownerId: '1234', type: 'text/plain', size: 0 });
+    await fragment.save();
+    expect (fragment.formatsExtensions()).toEqual(['.txt']);
+  });
+
+  test('text/markdown fragment formats', async () => {
+    const fragment = new Fragment({ ownerId: '1234', type: 'text/markdown', size: 0 });
+    await fragment.save();
+    expect (fragment.formatsExtensions()).toEqual(['.md', '.html', '.txt']);
+  });
+
+  test('text/html fragment formats', async () => {
+    const fragment = new Fragment({ ownerId: '1234', type: 'text/html', size: 0 });
+    await fragment.save();
+    expect (fragment.formatsExtensions()).toEqual(['.html', '.txt']);
+  });
+
+  test('text/csv fragment formats', async () => {
+    const fragment = new Fragment({ ownerId: '1234', type: 'text/csv', size: 0 });
+    await fragment.save();
+    expect (fragment.formatsExtensions()).toEqual(['.csv', '.txt', '.json']);
+  });
+
+  test('application/json fragment formats', async () => {
+    const fragment = new Fragment({ ownerId: '1234', type: 'application/json', size: 0 });
+    await fragment.save();
+    expect (fragment.formatsExtensions()).toEqual(['.json', '.txt']);
+  });
+
 });
 
 describe('Conversion - images', () => {

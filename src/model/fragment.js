@@ -22,7 +22,7 @@ const {
 } = require('./data');
 
 class Fragment {
-  constructor({ id, ownerId, created, updated, type, size = 0 }) {
+  constructor({ id, ownerId, created, updated, type, size = 0, tag = null }) {
     if (!ownerId)
       throw new Error(`ownerId is required`);
     if (!type)
@@ -41,6 +41,7 @@ class Fragment {
     this.updated = updated || new Date().toISOString();
     this.type = type;
     this.size = size;
+    this.tag = tag;
   }
 
   /**
@@ -53,6 +54,28 @@ class Fragment {
     const fragments = await listFragments(ownerId, expand);
     return fragments;
   }
+
+    /**
+   * Get all fragments (id or full) for the given user
+   * @param {string} ownerId user's hashed email
+   * @param {queries} queries user's search queries to search by metadata
+   * @param {boolean} expand whether to expand ids to full fragments
+   * @returns Promise<Array<Fragment>>
+   */
+    static async searchByMetadata(ownerId, { tag, created, updated, type, size }, expand = false) {
+        // Build the query based on the provided search parameters
+        const query = {
+          ownerId,
+          ...(tag && { tag }),
+          ...(created && { created }),
+          ...(updated && { updated }),
+          ...(type && { type }),
+          ...(size && { size }),
+        };
+      const fragments = await listFragments(ownerId, query, expand);
+      return fragments;
+    }
+  
 
   /**
    * Gets a fragment for the user by the given id.
@@ -91,6 +114,7 @@ class Fragment {
       updated: new Date().toISOString(),
       type: this.type,
       size: this.size,
+      tag: this.tag,
     });
   }
 
@@ -100,6 +124,15 @@ class Fragment {
    */
   async getData() {
     return await readFragmentData(this.ownerId, this.id);
+  }
+
+  /**
+   *  Set's the fragment's tag 
+   * @param {string} tag fragment's tag
+   */
+  async setTag(tag) {
+    this.tag = tag;
+    await this.save();
   }
 
   /**
@@ -138,11 +171,37 @@ class Fragment {
 
   /**
    * Returns the formats into which this fragment type can be converted
+   * @returns {Array<string>} list of .ext in an array
+   */
+  formatsExtensions() {
+    const { type } = contentType.parse(this.type);
+
+    if (Fragment.isSupportedImageType(type)) 
+      return ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif'];
+    
+    if (type.includes("text/markdown"))
+      return ['.md', '.html', '.txt'];
+
+    if (type.includes("text/html"))
+      return ['.html', '.txt'];
+
+    if (type.includes("text/csv"))
+      return ['.csv', '.txt', '.json'];
+
+    if (type.includes("application/json"))
+      return ['.json', '.txt'];
+
+    return ['.txt'];
+  }
+
+    /**
+   * Returns the formats into which this fragment type can be converted
    * @returns {Array<string>} list of supported mime types
    */
-  get formats() {
-    return ['text/plain'];
-  }
+    get formats() {
+  
+      return ['text/plain'];
+    }
 
   /**
    * Returns true if we know how to work with this content type
@@ -206,12 +265,7 @@ class Fragment {
         return fragData;
 
       logger.debug({ extension }, "attempting to convert image to this extension.");
-      try {
-        return await sharp(fragData).toFormat((extension)).toBuffer();
-      } catch (error) {
-        logger.error({ error }, "Sharp failed to convert image");
-        throw new Error(`Image conversion failed: ${error.message}`);
-      }
+      return await sharp(fragData).toFormat((extension)).toBuffer();
 
     } catch (error) {
       logger.error('Error retrieving fragment data:', error);

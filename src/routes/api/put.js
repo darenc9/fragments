@@ -25,6 +25,11 @@ module.exports = async (req, res) => {
       return res.status(400).json(response.createErrorResponse(400, 'Content-Type does not match fragment type'));
     }
 
+    const { tag } = req.query;
+    if (tag) {
+      fragment.setTag(tag);
+    }
+
     await fragment.setData(req.body);
     await fragment.save();
 
