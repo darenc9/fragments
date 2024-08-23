@@ -1,5 +1,7 @@
 # Fragments Microservice
 
+Fragments-ui (front-end client): https://github.com/darenc9/fragments-ui/
+
 ## Introduction
 ---
 Fragments is a highly scalable containerized microservice that manages small fragments of texts and images. 
